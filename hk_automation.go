@@ -4,24 +4,24 @@ import (
 	"github.com/brutella/hc"
 	"fmt"
 	"github.com/brutella/hc/accessory"
-	"homeAutomation/controller"
-	"homeAutomation/rest"
+	"hkautomation/rest"
+	"hkautomation/controller"
 )
 
 const CONTROLLER_IP_ADDRESS string = "192.168.0.166"
 const PROTOCOL string = "http://"
-const GATE_SERVICE_URL = PROTOCOL + CONTROLLER_IP_ADDRESS
+const ARDUINO_SERVICE_URL = PROTOCOL + CONTROLLER_IP_ADDRESS
 
-var restClient rest.SimpleRestClient = rest.SimpleRestClient{}
+var accessoryStateUpdater rest.AccessoryStateUpdater = rest.AccessoryStateUpdater{ServiceUrl: ARDUINO_SERVICE_URL}
 
 func createGateAccessory() *accessory.Accessory {
-	gateAccessory := controller.HKGateController{ServiceUrl: GATE_SERVICE_URL, RestClient: restClient}.Create()
+	gateAccessory := controller.HKGateController{ServiceUrl: ARDUINO_SERVICE_URL, AccessoryStateUpdater: accessoryStateUpdater}.Create()
 
 	return gateAccessory.Accessory
 }
 
 func createKitchenLightAccessory() *accessory.Accessory {
-	kitchenLightAccessory := controller.HKKitchenLightController{ServiceUrl: GATE_SERVICE_URL, RestClient: restClient}.Create()
+	kitchenLightAccessory := controller.HKKitchenLightController{ServiceUrl: ARDUINO_SERVICE_URL, AccessoryStateUpdater: accessoryStateUpdater}.Create()
 
 	return kitchenLightAccessory.Accessory
 }

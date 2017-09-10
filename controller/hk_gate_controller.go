@@ -5,22 +5,25 @@ import (
 	"fmt"
 	"homeAutomation/hkaccessory"
 	"github.com/brutella/hc/characteristic"
-	"homeAutomation/rest"
+	"hkautomation/rest"
 )
 
 type HKGateController struct {
 	ServiceUrl string
-	RestClient rest.SimpleRestClient
+	AccessoryStateUpdater rest.AccessoryStateUpdater
 }
 
-func (c HKGateController) openGate() {
-	fmt.Println("Opening gate")
-	c.RestClient.Post(c.ServiceUrl, "{\"gate\":\"1\"}")
-}
+func (c HKGateController) changeGateState(newState int) {
+	var accessoryName string = "gate"
 
-func (c HKGateController) closeGate() {
-	fmt.Println("Closing gate")
-	c.RestClient.Post(c.ServiceUrl, "{\"gate\":\"0\"}")
+	if newState == rest.LowState {
+		fmt.Println("Closing gate")
+	} else {
+		fmt.Println("Opening gate")
+	}
+
+	action := rest.AccessoryStateAction{Name: accessoryName, State: newState}
+	c.AccessoryStateUpdater.Update(action)
 }
 
 func (c HKGateController) Create() *hkaccessory.GarageDoor {
@@ -33,9 +36,9 @@ func (c HKGateController) Create() *hkaccessory.GarageDoor {
 
 	gateAcc.GarageDoor.TargetDoorState.OnValueRemoteUpdate(func(newValue int) {
 		if newValue == characteristic.TargetDoorStateOpen {
-			c.openGate()
+			c.changeGateState(rest.HighState)
 		} else if newValue == characteristic.TargetDoorStateClosed {
-			c.closeGate()
+			c.changeGateState(rest.LowState)
 		}
 
 		// for now the gate changes it's state immediately, can be changed afterwards and listen for an Arduino request
