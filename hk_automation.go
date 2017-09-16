@@ -4,24 +4,21 @@ import (
 	"github.com/brutella/hc"
 	"fmt"
 	"github.com/brutella/hc/accessory"
-	"hkautomation/rest"
-	"hkautomation/controller"
+	"hkautomation/service"
+	"hkautomation/hkaccessory_control"
 )
 
-const CONTROLLER_IP_ADDRESS string = "192.168.0.166"
-const PROTOCOL string = "http://"
-const ARDUINO_SERVICE_URL = PROTOCOL + CONTROLLER_IP_ADDRESS
+const ARDUINO_AUTHORITY string = "192.168.0.166:5050"
 
-var accessoryStateUpdater rest.AccessoryStateUpdater = rest.AccessoryStateUpdater{ServiceUrl: ARDUINO_SERVICE_URL}
+var accessoryStateUpdater *service.AccessoryStateUpdater = service.NewAccessoryStateUpdater(ARDUINO_AUTHORITY)
 
 func createGateAccessory() *accessory.Accessory {
-	gateAccessory := controller.HKGateController{ServiceUrl: ARDUINO_SERVICE_URL, AccessoryStateUpdater: accessoryStateUpdater}.Create()
-
+	gateAccessory := hkaccessory_control.HKGateController{ServiceUrl: ARDUINO_AUTHORITY, AccessoryStateUpdater: *accessoryStateUpdater}.Create()
 	return gateAccessory.Accessory
 }
 
 func createKitchenLightAccessory() *accessory.Accessory {
-	kitchenLightAccessory := controller.HKKitchenLightController{ServiceUrl: ARDUINO_SERVICE_URL, AccessoryStateUpdater: accessoryStateUpdater}.Create()
+	kitchenLightAccessory := hkaccessory_control.HKKitchenLightController{ServiceUrl: ARDUINO_AUTHORITY, AccessoryStateUpdater: *accessoryStateUpdater}.Create()
 
 	return kitchenLightAccessory.Accessory
 }
