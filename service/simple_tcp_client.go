@@ -10,32 +10,36 @@ type SimpleTcpClient struct {
 	AccessoryAuthority string
 }
 
-func (c SimpleTcpClient) Send(dataToSend string, opStateChannel chan<- bool) {
+func (c SimpleTcpClient) Send(dataToSend string, opStateChannel chan<- int) {
 	conn, err := net.Dial("tcp", c.AccessoryAuthority)
 	if err != nil {
 		logConnectionError(err, c.AccessoryAuthority)
-		opStateChannel <- false
+		opStateChannel <- 0
 		return
 	}
 
 	fmt.Fprintf(conn, dataToSend + "\n")
 
-	response, err := bufio.NewReader(conn).ReadString('\n')
+	response, err := bufio.NewReader(conn).ReadBytes('\n')
 	if err != nil {
 		logConnectionError(err, c.AccessoryAuthority)
-		opStateChannel <- false
+		opStateChannel <- 0
 	}
 
-	if response == "ack" {
-		fmt.Printf("Command acknowledged by %s", c.AccessoryAuthority)
-		opStateChannel <- true
+	if len(response) == 4 {
+		if response[2] ==  48 {
+			fmt.Println("Command returned 0")
+			opStateChannel <- 0
+		} else {
+			fmt.Println("Command returned 1")
+			opStateChannel <- 1
+		}
 	} else {
-		fmt.Printf("Command rejected by %s", c.AccessoryAuthority)
-		opStateChannel <- false
+		fmt.Println("Command returned 0")
+		opStateChannel <- 0
 	}
 
 	conn.Close()
-	return
 }
 
 func logConnectionError(err error, accessoryServerIp string) {

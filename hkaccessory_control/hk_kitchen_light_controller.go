@@ -22,9 +22,9 @@ func (c HKKitchenLightController) Create() *accessory.Lightbulb {
 
 	lightAcc.Lightbulb.On.OnValueRemoteUpdate(func(on bool) {
 		if on == true {
-			go c.AccessoryStateUpdater.Update(model.HighState, &info, make(chan bool))
+			go c.AccessoryStateUpdater.Update(model.HighState, &info, make(chan int))
 		} else {
-			go c.AccessoryStateUpdater.Update(model.LowState, &info, make(chan bool))
+			go c.AccessoryStateUpdater.Update(model.LowState, &info, make(chan int))
 		}
 	})
 

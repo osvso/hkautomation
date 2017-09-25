@@ -23,24 +23,20 @@ func (c HKGateController) Create() *hkaccessory.GarageDoor {
 	gateAcc := hkaccessory.NewGarageDoor(info)
 
 	gateAcc.GarageDoor.TargetDoorState.OnValueRemoteUpdate(func(newValue int) {
-		var opStateChannel chan bool = make(chan bool)
-		if newValue == characteristic.TargetDoorStateOpen {
-			go c.AccessoryStateUpdater.Update(model.HighState, &info, opStateChannel)
-		} else if newValue == characteristic.TargetDoorStateClosed {
-			go c.AccessoryStateUpdater.Update(model.LowState, &info, opStateChannel)
-		}
-
+		var opStateChannel chan int = make(chan int)
 		go c.updateState(gateAcc, opStateChannel)
+
+		if newValue == characteristic.TargetDoorStateOpen {
+			go c.AccessoryStateUpdater.Update(model.LowState, &info, opStateChannel)
+		} else if newValue == characteristic.TargetDoorStateClosed {
+			go c.AccessoryStateUpdater.Update(model.HighState, &info, opStateChannel)
+		}
 	})
 
 	return gateAcc
 }
 
-func (c HKGateController) updateState(gateAcc *hkaccessory.GarageDoor, opStateChannel <-chan bool) {
-	newValue := <-opStateChannel
-	if newValue {
-		gateAcc.GarageDoor.CurrentDoorState.SetValue(characteristic.TargetDoorStateOpen)
-	} else {
-		gateAcc.GarageDoor.CurrentDoorState.SetValue(characteristic.TargetDoorStateClosed)
-	}
+func (c HKGateController) updateState(gateAcc *hkaccessory.GarageDoor, opStateChannel <-chan int) {
+	newState := <-opStateChannel
+	gateAcc.GarageDoor.CurrentDoorState.SetValue(newState)
 }

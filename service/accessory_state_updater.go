@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/brutella/hc/accessory"
+	"strconv"
 )
 
 
@@ -15,7 +16,7 @@ func NewAccessoryStateUpdater(AccessoryAuthority string) *AccessoryStateUpdater 
 	return &AccessoryStateUpdater{client}
 }
 
-func (u AccessoryStateUpdater) Update(newState int, info *accessory.Info, opStateChannel chan<- bool) {
+func (u AccessoryStateUpdater) Update(newState int, info *accessory.Info, opStateChannel chan<- int) {
 	fmt.Printf("Changing accessory '%s' state to %d\n", info.Name, newState)
 
 	command := u.createCommand(newState, info)
@@ -23,5 +24,7 @@ func (u AccessoryStateUpdater) Update(newState int, info *accessory.Info, opStat
 }
 
 func (u AccessoryStateUpdater) createCommand(newState int, info *accessory.Info) string {
-	return info.Model + ":" + string(newState)
+	var command string = info.Model + ":" + strconv.Itoa(newState)
+	fmt.Printf("Sending command %s\n", command)
+	return command
 }
